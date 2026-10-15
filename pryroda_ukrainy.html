@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Інтерактивна сторінка про різноманіття природи України: природні зони, ліси, поля, водойми та гори.">
+  <title>Природа України — інтерактивна подорож</title>
+  <style>
+    :root {
+      --forest: #173f34;
+      --leaf: #477d55;
+      --cream: #f5f4ec;
+      --ink: #20332c;
+      --muted: #607269;
+      --card: #ffffff;
+      --line: #dfe5dc;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0; background: var(--cream); color: var(--ink);
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      line-height: 1.6;
+    }
+    header {
+      color: white; padding: clamp(2rem, 6vw, 5rem) 1.25rem;
+      background: linear-gradient(135deg, #173f34, #376c4d 70%, #71965e);
+    }
+    .hero, main, footer { width: min(1100px, calc(100% - 2rem)); margin: auto; }
+    .eyebrow { color: #d6e9bb; text-transform: uppercase; letter-spacing: .12em; font-size: .78rem; font-weight: 700; }
+    h1 { font-size: clamp(2.2rem, 6vw, 4.4rem); line-height: 1.05; margin: .6rem 0 1rem; }
+    h2 { font-size: clamp(1.55rem, 3vw, 2.2rem); margin: 0 0 .7rem; line-height: 1.2; }
+    h3 { margin: 0 0 .35rem; }
+    .hero p { max-width: 680px; color: #edf4e9; font-size: 1.08rem; }
+    .stats { display: flex; flex-wrap: wrap; gap: .75rem; margin-top: 1.5rem; }
+    .stat { padding: .8rem 1rem; border: 1px solid #ffffff40; border-radius: 14px; min-width: 135px; background: #ffffff12; }
+    .stat strong { display: block; font-size: 1.4rem; }
+    main { padding: 2.2rem 0 3rem; }
+    section { margin-bottom: 3rem; }
+    .intro { color: var(--muted); max-width: 760px; margin-top: 0; }
+    .filters { display: flex; flex-wrap: wrap; gap: .55rem; margin: 1rem 0 1.2rem; }
+    button {
+      font: inherit; cursor: pointer; border: 1px solid #cad5c9; border-radius: 999px;
+      background: white; color: var(--ink); padding: .65rem 1rem; transition: .18s ease;
+    }
+    button:hover { transform: translateY(-1px); border-color: var(--leaf); }
+    button:focus-visible, a:focus-visible { outline: 3px solid #e2ad45; outline-offset: 3px; }
+    button[aria-pressed="true"], .primary {
+      background: var(--forest); color: white; border-color: var(--forest);
+    }
+    .landscape-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+    .landscape-card, .panel, .quiz { background: var(--card); border: 1px solid var(--line); border-radius: 20px; overflow: hidden; }
+    .landscape-card img { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; background: #dfe8d8; }
+    .landscape-copy { padding: 1rem 1.1rem 1.2rem; }
+    .landscape-copy p { margin: .35rem 0 0; color: var(--muted); }
+    .map-layout { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(280px, .8fr); gap: 1rem; align-items: start; }
+    .panel { padding: 1rem; }
+    .map-wrap { background: #edf1e6; border-radius: 15px; padding: .5rem; }
+    #zone-map { width: 100%; height: auto; display: block; }
+    .zone-shape { cursor: pointer; stroke: #fff; stroke-width: 2.5; stroke-linejoin: round; transition: filter .15s, opacity .15s; }
+    .zone-shape:hover, .zone-shape:focus { filter: brightness(1.08); outline: none; stroke: #263d31; stroke-width: 4; }
+    .zone-shape.selected { stroke: #20392d; stroke-width: 4; }
+    .map-label { font-size: 12px; font-weight: 700; fill: #23372e; text-anchor: middle; pointer-events: none; }
+    .map-note { font-size: .85rem; color: var(--muted); margin: .65rem .2rem .1rem; }
+    .zone-detail { margin-top: .9rem; }
+    .zone-detail .emoji { font-size: 2.4rem; }
+    .zone-detail h3 { font-size: 1.4rem; }
+    .zone-detail .region { color: var(--muted); font-size: .9rem; margin: 0 0 .8rem; }
+    .fact { background: #f0f4e9; border-radius: 12px; padding: .85rem; margin-top: 1rem; }
+    .fact p { margin: .25rem 0 0; }
+    .detail-list { display: grid; gap: .65rem; }
+    .detail-list p { margin: 0; }
+    .compare { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+    .compare article { background: white; border: 1px solid var(--line); padding: 1rem; border-radius: 16px; }
+    .compare p { margin: .35rem 0 0; color: var(--muted); }
+    .quiz { padding: 1.2rem; }
+    .question { padding: .9rem 0; border-bottom: 1px solid var(--line); }
+    .question:last-of-type { border-bottom: 0; }
+    .question p { font-weight: 700; margin: 0 0 .6rem; }
+    .answers { display: grid; gap: .45rem; }
+    .answers label { display: flex; gap: .55rem; align-items: flex-start; padding: .5rem .65rem; border-radius: 10px; background: #f7f8f4; cursor: pointer; }
+    .answers input { margin-top: .35rem; }
+    #quiz-result { font-weight: 700; margin-top: 1rem; }
+    footer { border-top: 1px solid var(--line); padding: 1.5rem 0 2.5rem; color: var(--muted); font-size: .9rem; }
+    .hidden { display: none !important; }
+    @media (max-width: 760px) {
+      .map-layout { grid-template-columns: 1fr; }
+      .landscape-grid, .compare { grid-template-columns: 1fr; }
+      .panel { padding: .8rem; }
+      .map-label { font-size: 13px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="hero">
+      <div class="eyebrow">Природна спадщина України</div>
+      <h1>Природа України</h1>
+      <h2>Одна країна — безліч ландшафтів</h2>
+      <p>Від соснових лісів Полісся до золотих степів, річок і гірських вершин Карпат. Досліджуй, порівнюй і відкривай природне різноманіття України.</p>
+      <div class="stats">
+        <div class="stat"><strong>🌲 Ліси</strong><span>північ і гори</span></div>
+        <div class="stat"><strong>🌾 Степи</strong><span>південь і схід</span></div>
+        <div class="stat"><strong>🌊 Води</strong><span>річки, озера, моря</span></div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section id="landscapes">
+      <h2>1. Подорож ландшафтами</h2>
+      <p class="intro">Обери тип ландшафту, щоб переглянути фотографії та дізнатися, чим він особливий.</p>
+      <div class="filters" aria-label="Фільтр ландшафтів">
+        <button type="button" data-filter="all" aria-pressed="true">🌍 Усі</button>
+        <button type="button" data-filter="fields" aria-pressed="false">🌾 Поля</button>
+        <button type="button" data-filter="forests" aria-pressed="false">🌲 Ліси</button>
+        <button type="button" data-filter="water" aria-pressed="false">🌊 Водойми</button>
+        <button type="button" data-filter="mountains" aria-pressed="false">🏔️ Гори</button>
+      </div>
+      <div class="landscape-grid">
+        <article class="landscape-card" data-kind="fields">
+          <img src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1000&q=85" alt="Зелені та золоті поля під широким небом" loading="lazy">
+          <div class="landscape-copy"><h3>Степи та поля</h3><p>Широкі рівнини, трав’яниста рослинність і золоті лани. Природний степ відрізняється від поля, яке обробляє людина.</p></div>
+        </article>
+        <article class="landscape-card" data-kind="forests">
+          <img src="https://images.unsplash.com/photo-1448375240586-882707db888b?auto=format&fit=crop&w=1000&q=85" alt="Густий зелений ліс" loading="lazy">
+          <div class="landscape-copy"><h3>Ліси</h3><p>Сосни, берези, дуби, мохи та лісові ягоди. Ліси є домівкою для багатьох видів рослин і тварин.</p></div>
+        </article>
+        <article class="landscape-card" data-kind="water">
+          <img src="https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1000&q=85" alt="Озеро серед гір і лісів" loading="lazy">
+          <div class="landscape-copy"><h3>Річки та озера</h3><p>Від гірських потоків до великих річок і спокійних озер. Водойми підтримують життя екосистем і людей.</p></div>
+        </article>
+        <article class="landscape-card" data-kind="mountains">
+          <img src="https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1000&q=85" alt="Гірські хребти та зелені схили" loading="lazy">
+          <div class="landscape-copy"><h3>Гірські ландшафти</h3><p>Карпати вражають зеленими хребтами, полонинами, лісами та гірськими струмками.</p></div>
+        </article>
+      </div>
+      <p class="map-note">Фотографії завантажуються з Unsplash, тому для їх перегляду потрібне підключення до інтернету.</p>
+    </section>
+
+    <section id="map-section">
+      <h2>2. Інтерактивна карта природних областей</h2>
+      <p class="intro">Натисни на кольорову ділянку карти або скористайся кнопками нижче. Контур стилізований за формою України; природні області показані схематично й не збігаються з адміністративними межами.</p>
+      <div class="map-layout">
+        <div class="panel">
+          <div class="map-wrap">
+            <!-- Стилізований контур України; області всередині можна натискати -->
+            <svg id="zone-map" viewBox="0 0 600 380" role="img" aria-label="Схематична інтерактивна карта природних областей України">
+              <defs>
+                <clipPath id="ukraine-clip">
+                  <path id="ukraine-outline" d="M42 102 L60 82 81 74 97 48 119 44 140 51 163 43 184 55 207 53 224 68 243 63 257 79 279 73 300 83 321 70 341 77 355 64 379 67 398 51 418 56 436 43 452 55 469 49 486 65 507 72 522 92 543 105 535 124 552 139 537 155 548 173 529 189 536 207 518 222 499 230 487 250 463 257 449 274 427 281 410 299 387 304 368 321 346 310 326 318 305 302 287 298 272 281 250 278 237 258 215 252 202 231 180 230 161 214 139 216 120 201 102 205 89 188 72 179 62 157 47 145 51 127 39 115 Z"/>
+                </clipPath>
+              </defs>
+              <g clip-path="url(#ukraine-clip)">
+                <rect width="600" height="380" fill="#f2df82"/>
+                <path class="zone-shape" tabindex="0" role="button" data-zone="polissia" aria-label="Мішані ліси Полісся" fill="#7db8d2" d="M0 0 H380 L354 76 321 91 286 84 253 99 225 82 193 92 165 74 133 83 99 70 72 99 0 155 Z"/>
+                <path class="zone-shape" tabindex="0" role="button" data-zone="foreststeppe" aria-label="Лісостеп" fill="#e5a18c" d="M180 87 L225 82 253 99 286 84 321 91 354 76 388 93 418 112 399 149 372 165 349 184 319 177 298 194 269 183 246 199 222 185 201 207 180 193 165 167 Z"/>
+                <path class="zone-shape" tabindex="0" role="button" data-zone="steppe" aria-label="Степ" fill="#f2df82" d="M165 167 L180 193 201 207 222 185 246 199 269 183 298 194 319 177 349 184 372 165 399 149 418 112 446 133 476 142 500 171 540 180 570 240 540 290 500 330 460 360 400 370 350 340 300 330 260 300 220 275 180 250 140 240 110 210 Z"/>
+                <path class="zone-shape" tabindex="0" role="button" data-zone="carpathians" aria-label="Українські Карпати" fill="#79a878" d="M15 145 L48 128 72 139 90 163 112 179 137 190 163 208 183 228 164 242 139 235 118 222 90 218 70 198 47 183 Z"/>
+                <path class="zone-shape" tabindex="0" role="button" data-zone="crimea" aria-label="Кримські гори" fill="#b78c65" d="M415 310 L445 304 470 313 490 327 475 345 453 349 431 337 Z"/>
+              </g>
+              <use href="#ukraine-outline" fill="none" stroke="#354c43" stroke-width="2.5" stroke-linejoin="round"/>
+              <g class="map-label">
+                <text x="260" y="47">Мішані ліси</text>
+                <text x="285" y="137">Лісостеп</text>
+                <text x="350" y="237">Степ</text>
+                <text x="91" y="181">Карпати</text>
+                <text x="452" y="328">Кримські гори</text>
+              </g>
+            </svg>
+          </div>
+          <p class="map-note">Обери зону на карті. Для клавіатури: переходь між кольоровими ділянками клавішею Tab і натискай Enter.</p>
+          <div class="filters" id="zone-buttons" aria-label="Обрати природну область">
+            <button type="button" data-zone-button="polissia" aria-pressed="true">🌲 Мішані ліси</button>
+            <button type="button" data-zone-button="foreststeppe" aria-pressed="false">🌳 Лісостеп</button>
+            <button type="button" data-zone-button="steppe" aria-pressed="false">🌾 Степ</button>
+            <button type="button" data-zone-button="carpathians" aria-pressed="false">🏔️ Карпати</button>
+            <button type="button" data-zone-button="crimea" aria-pressed="false">⛰️ Кримські гори</button>
+          </div>
+        </div>
+
+        <aside class="panel zone-detail" aria-live="polite" aria-atomic="true">
+          <div class="emoji" id="zone-emoji">🌲</div>
+          <h3 id="zone-title">Мішані ліси (Полісся)</h3>
+          <p class="region" id="zone-region">Північ України</p>
+          <p id="zone-description">Полісся — край соснових лісів, боліт, озер і тихих річок. Тут поширені вологі ґрунти та мішані ліси.</p>
+          <div class="detail-list">
+            <p><strong>🌿 Рослини:</strong> <span id="zone-plants">сосна, береза, дуб, чорниця</span></p>
+            <p><strong>🦊 Тварини:</strong> <span id="zone-animals">лось, бобер, лелека, рись</span></p>
+          </div>
+          <div class="fact"><strong>💡 Цікавий факт</strong><p id="zone-fact">Полісся відоме болотами, які накопичують вуглець і допомагають регулювати водний баланс.</p></div>
+        </aside>
+      </div>
+    </section>
+
+    <section>
+      <h2>3. Чим відрізняються природні області?</h2>
+      <div class="compare">
+        <article><h3>🌲 Мішані ліси</h3><p>Більше вологи, хвойні й листяні дерева, болота та піщані ґрунти.</p></article>
+        <article><h3>🌳 Лісостеп</h3><p>Поєднання лісів і відкритих просторів, родючі ґрунти та умови для землеробства.</p></article>
+        <article><h3>🌾 Степ</h3><p>Відкриті трав’янисті рівнини, спекотніше літо й менше опадів, ніж на півночі.</p></article>
+        <article><h3>🏔️ Гірські області</h3><p>Перепади висот, ліси, гірські луки та зміна природних умов із висотою.</p></article>
+      </div>
+    </section>
+
+    <section id="quiz-section">
+      <h2>4. Перевір себе</h2>
+      <p class="intro">Вибери правильні відповіді й натисни «Перевірити».</p>
+      <form class="quiz" id="quiz">
+        <div class="question">
+          <p>1. Яка природна зона характерна для півночі України?</p>
+          <div class="answers">
+            <label><input type="radio" name="q1" value="0"> Степ</label>
+            <label><input type="radio" name="q1" value="1"> Мішані ліси</label>
+            <label><input type="radio" name="q1" value="2"> Субтропічні ліси</label>
+          </div>
+        </div>
+        <div class="question">
+          <p>2. Де переважають відкриті трав’янисті рівнини?</p>
+          <div class="answers">
+            <label><input type="radio" name="q2" value="0"> У степу</label>
+            <label><input type="radio" name="q2" value="1"> У мішаних лісах</label>
+            <label><input type="radio" name="q2" value="2"> У Карпатах</label>
+          </div>
+        </div>
+        <div class="question">
+          <p>3. Що найбільше впливає на зміну рослинності в горах?</p>
+          <div class="answers">
+            <label><input type="radio" name="q3" value="0"> Колір гір</label>
+            <label><input type="radio" name="q3" value="1"> Висота над рівнем моря</label>
+            <label><input type="radio" name="q3" value="2"> Відстань до столиці</label>
+          </div>
+        </div>
+        <button class="primary" type="submit">Перевірити відповіді</button>
+        <button type="reset">Спробувати знову</button>
+        <p id="quiz-result" aria-live="polite"></p>
+      </form>
+    </section>
+
+    <section>
+      <div class="panel" style="background:#173f34;color:white;border:0">
+        <h2>Бережімо природу України 💚</h2>
+        <p>Ліси, степи, гори й водойми підтримують біорізноманіття, впливають на клімат і є важливою частиною природної спадщини нашої країни.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    Навчальний інтерактивний проєкт «Природа України». Карта схематична й призначена для ознайомлення, а не для точного географічного визначення меж.
+  </footer>
+
+  <script>
+    const zoneInfo = {
+      polissia: {
+        title: "Мішані ліси (Полісся)", region: "Північ України", emoji: "🌲",
+        description: "Полісся — край соснових лісів, боліт, озер і тихих річок. Тут поширені вологі ґрунти та мішані ліси.",
+        plants: "сосна, береза, дуб, чорниця",
+        animals: "лось, бобер, лелека, рись",
+        fact: "Полісся відоме болотами, які накопичують вуглець і допомагають регулювати водний баланс."
+      },
+      foreststeppe: {
+        title: "Лісостеп", region: "Центральна Україна", emoji: "🌳",
+        description: "Лісостеп поєднує лісові масиви з луками та відкритими полями. Це перехідна зона між мішаними лісами й степом.",
+        plants: "дуб, граб, ковила, різнотрав’я",
+        animals: "козуля, заєць, лисиця, фазан",
+        fact: "У лісостепу поширені родючі чорноземи, важливі для землеробства."
+      },
+      steppe: {
+        title: "Степ", region: "Південь і південний схід України", emoji: "🌾",
+        description: "Степ — простір широких горизонтів, трав’янистих рівнин і великих полів. Опадів тут зазвичай менше, ніж на півночі, а літо часто спекотне.",
+        plants: "ковила, типчак, полин",
+        animals: "бабак, ховрах, жайворонок, дрохва",
+        fact: "Природного степу залишилося значно менше через розорювання земель, тому його збереження особливо важливе."
+      },
+      carpathians: {
+        title: "Українські Карпати", region: "Захід України", emoji: "🏔️",
+        description: "Карпати — гори з лісистими схилами, полонинами, прохолоднішим кліматом і гірськими потоками. З висотою змінюються природні умови.",
+        plants: "бук, ялина, смерека, гірські трави",
+        animals: "олень, саламандра, бурий ведмідь",
+        fact: "На високогірних полонинах розташовані безлісі гірські луки."
+      },
+      crimea: {
+        title: "Кримські гори", region: "Південь Кримського півострова", emoji: "⛰️",
+        description: "Кримські гори вирізняються скелястими вершинами, лісами, яйлами та близькістю Чорного моря. На південних схилах клімат тепліший.",
+        plants: "дуб, сосна кримська, ялівець",
+        animals: "козуля, лисиця, різні хижі птахи",
+        fact: "Яйли — характерні для Кримських гір безлісі платоподібні ділянки на вершинах."
+      }
+    };
+
+    function selectZone(id) {
+      const info = zoneInfo[id];
+      if (!info) return;
+      document.getElementById("zone-title").textContent = info.title;
+      document.getElementById("zone-region").textContent = info.region;
+      document.getElementById("zone-emoji").textContent = info.emoji;
+      document.getElementById("zone-description").textContent = info.description;
+      document.getElementById("zone-plants").textContent = info.plants;
+      document.getElementById("zone-animals").textContent = info.animals;
+      document.getElementById("zone-fact").textContent = info.fact;
+
+      document.querySelectorAll(".zone-shape").forEach(shape => {
+        const selected = shape.dataset.zone === id;
+        shape.classList.toggle("selected", selected);
+        shape.setAttribute("aria-pressed", String(selected));
+      });
+      document.querySelectorAll("[data-zone-button]").forEach(button => {
+        button.setAttribute("aria-pressed", String(button.dataset.zoneButton === id));
+      });
+    }
+
+    document.querySelectorAll(".zone-shape").forEach(shape => {
+      shape.addEventListener("click", () => selectZone(shape.dataset.zone));
+      shape.addEventListener("keydown", event => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          selectZone(shape.dataset.zone);
+        }
+      });
+    });
+    document.querySelectorAll("[data-zone-button]").forEach(button => {
+      button.addEventListener("click", () => selectZone(button.dataset.zoneButton));
+    });
+
+    document.querySelectorAll("[data-filter]").forEach(button => {
+      button.addEventListener("click", () => {
+        const filter = button.dataset.filter;
+        document.querySelectorAll("[data-filter]").forEach(item =>
+          item.setAttribute("aria-pressed", String(item === button))
+        );
+        document.querySelectorAll(".landscape-card").forEach(card => {
+          card.classList.toggle("hidden", filter !== "all" && card.dataset.kind !== filter);
+        });
+      });
+    });
+
+    const quiz = document.getElementById("quiz");
+    quiz.addEventListener("submit", event => {
+      event.preventDefault();
+      const correct = ["q1", "q2", "q3"];
+      let score = 0;
+      let answered = 0;
+      correct.forEach((name, index) => {
+        const selected = quiz.querySelector(`input[name="${name}"]:checked`);
+        if (selected) {
+          answered++;
+          if (Number(selected.value) === [1, 0, 1][index]) score++;
+        }
+      });
+      const result = document.getElementById("quiz-result");
+      result.textContent = answered < 3
+        ? `Ти відповіла на ${answered} із 3 запитань. Заповни решту й перевір ще раз. Результат зараз: ${score} із 3.`
+        : `Твій результат: ${score} із 3 ${score === 3 ? "— чудово! 🌿" : "— спробуй ще раз, щоб закріпити знання."}`;
+    });
+    quiz.addEventListener("reset", () => {
+      document.getElementById("quiz-result").textContent = "";
+    });
+
+    selectZone("polissia");
+  </script>
+</body>
+</html>
